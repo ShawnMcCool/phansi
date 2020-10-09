@@ -1,4 +1,4 @@
-# PHAnsi
+# PhAnsi
 
 A light-weight self-contained PHP Ansi implementation.
 

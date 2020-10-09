@@ -1,4 +1,4 @@
-<?php namespace PhAnsi\Decorations;
+<?php namespace PhAnsi\Decoration;
 
 final class NineSliceBorder
 {
