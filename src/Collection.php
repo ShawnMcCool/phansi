@@ -1,12 +1,11 @@
 <?php namespace PhAnsi;
 
-use Countable;
 use ArrayAccess;
 use ArrayIterator;
-use JsonSerializable;
+use Countable;
 use IteratorAggregate;
 
-class Collection implements Countable, ArrayAccess, IteratorAggregate, JsonSerializable
+class Collection implements IteratorAggregate, Countable, ArrayAccess
 {
     protected array $items;
 
@@ -15,7 +14,22 @@ class Collection implements Countable, ArrayAccess, IteratorAggregate, JsonSeria
         $this->items = $items;
     }
 
-    public function add($item): Collection
+    public static function of(array $items): self
+    {
+        return new static($items);
+    }
+
+    public static function empty(): self
+    {
+        return new static;
+    }
+
+    public static function list(...$items): self
+    {
+        return new static($items);
+    }
+
+    public function add($item): self
     {
         $items = $this->items;
         $items[] = $item;
@@ -57,22 +71,30 @@ class Collection implements Countable, ArrayAccess, IteratorAggregate, JsonSeria
         return count($this->items);
     }
 
+    public function merge(Collection $that)
+    {
+        if (get_class($this) !== get_class($that)) {
+            throw new \Exception('CollectionTypeError::cannotMergeDifferentTypes');
+        }
+        return new static(array_merge($this->items, $that->items));
+    }
+    
     public function toArray(): array
     {
         return $this->copy()->items;
     }
 
-    public function copy(): Collection
+    public function copy(): self
     {
         return clone $this;
     }
 
-    public function map(callable $f): Collection
+    public function map(callable $f): self
     {
         return new static(array_map($f, $this->items));
     }
 
-    public function flatMap(callable $f): Collection
+    public function flatMap(callable $f): self
     {
         return new static(array_merge(...array_map($f, $this->items)));
     }
@@ -82,7 +104,7 @@ class Collection implements Countable, ArrayAccess, IteratorAggregate, JsonSeria
         return array_reduce($this->items, $f, $initial);
     }
 
-    public function filter(?callable $f = null): Collection
+    public function filter(?callable $f = null): self
     {
         return is_null($f)
             ? new static(array_values(array_filter($this->items)))
@@ -104,24 +126,19 @@ class Collection implements Countable, ArrayAccess, IteratorAggregate, JsonSeria
         return reset($this->items) ?: null;
     }
 
-    public function tail(): Collection
+    public function tail(): self
     {
-        return $this->slice(1);
+        return new static(array_slice($this->items, 1));
     }
 
-    public function slice($offset, $length = null): self
-    {
-        return new static(array_slice($this->items, $offset, $length));
-    }
-
-    public function merge(Collection $that)
-    {
-        return new static(array_merge((array) $this, ...$that));
-    }
-
-    public function reverse(): Collection
+    public function reverse(): self
     {
         return new static(array_reverse($this->items));
+    }
+
+    public function getIterator(): ArrayIterator
+    {
+        return new ArrayIterator($this->items);
     }
 
     public function isEmpty(): bool
@@ -194,36 +211,5 @@ class Collection implements Countable, ArrayAccess, IteratorAggregate, JsonSeria
         return new static(
             array_map(null, $this->items, $that->items)
         );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function jsonSerialize()
-    {
-        return $this->items;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getIterator()
-    {
-        return new ArrayIterator($this->items);
-    }
-
-    public static function of(array $items): Collection
-    {
-        return new static($items);
-    }
-
-    public static function empty(): Collection
-    {
-        return new static;
-    }
-
-    public static function list(...$items): Collection
-    {
-        return new static($items);
     }
 }
