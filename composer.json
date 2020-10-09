@@ -1,6 +1,6 @@
 {
     "name": "shawnmccool/phansi",
-    "description": "A PHP library for working with ANSI escape codes.",
+    "description": "A light-weight self-contained PHP Ansi library.",
     "type": "library",
     "license": "MIT",
     "authors": [

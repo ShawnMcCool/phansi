@@ -1,6 +1,6 @@
-<?php namespace PhAnsi;
+<?php namespace PhAnsi\Decorations;
 
-final class Border
+final class NineSliceBorder
 {
     public static function nineSlice(
         $topLeft, $topCenter, $topRight,
