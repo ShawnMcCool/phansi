@@ -1,8 +1,9 @@
-<?php namespace Monolith\Collections;
+<?php namespace PhAnsi; 
 
-use Countable;
 use ArrayAccess;
 use ArrayIterator;
+use Countable;
+use InvalidArgumentException;
 use IteratorAggregate;
 
 final class Collection implements IteratorAggregate, Countable, ArrayAccess
@@ -163,21 +164,6 @@ final class Collection implements IteratorAggregate, Countable, ArrayAccess
         return new self(array_slice($this->items, 1));
     }
 
-    public function toDictionary(): Dictionary
-    {
-        return Dictionary::of(
-            $this->items
-        );
-    }
-
-    public function merge(Collection $that): self
-    {
-        if (get_class($this) !== get_class($that)) {
-            throw CollectionTypeError::cannotMergeDifferentTypes($this, $that);
-        }
-        return new self(array_merge($this->items, $that->items));
-    }
-
     public function reverse(): self
     {
         return new self(array_reverse($this->items));
@@ -197,7 +183,7 @@ final class Collection implements IteratorAggregate, Countable, ArrayAccess
     {
         $items = $this->items;
         usort($items, $f);
-        return static::of($items);
+        return self::of($items);
     }
 
     /**
@@ -220,7 +206,7 @@ final class Collection implements IteratorAggregate, Countable, ArrayAccess
      * @return boolean true on success or false on failure.
      * </p>
      * <p>
-     * The return value will be casted to boolean if non-boolean was returned.
+     * The return value will be cast to boolean if non-boolean was returned.
      * @since 5.0.0
      */
     public function offsetExists(mixed $offset): bool
@@ -248,7 +234,7 @@ final class Collection implements IteratorAggregate, Countable, ArrayAccess
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        throw new CannotWriteToImmutableCollectionUsingArrayAccess();
+        throw new InvalidArgumentException();
     }
 
     /**
@@ -257,32 +243,7 @@ final class Collection implements IteratorAggregate, Countable, ArrayAccess
      */
     public function offsetUnset(mixed $offset): void
     {
-        throw new CannotWriteToImmutableCollectionUsingArrayAccess();
-    }
-
-    public function zip(Collection $that): Dictionary
-    {
-        return Dictionary::of(
-            array_map(null, $this->items, $that->items)
-        );
-    }
-
-    public function unique(?callable $hashFunction = null)
-    {
-        if (is_null($hashFunction)) {
-            return new self(array_values(array_unique($this->items)));
-        }
-
-        $hashTable = MutableDictionary::empty();
-
-        $this->each(
-            function ($item) use ($hashTable, $hashFunction) {
-                $hash = $hashFunction($item);
-                $hashTable->add($hash, $item);
-            }
-        );
-
-        return $hashTable->toCollection();
+        throw new InvalidArgumentException();
     }
 
     public static function of(array $items): self
