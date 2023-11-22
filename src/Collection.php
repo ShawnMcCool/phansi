@@ -236,7 +236,16 @@ final class Collection implements IteratorAggregate, Countable, ArrayAccess
     {
         throw new InvalidArgumentException();
     }
-
+    
+    public function merge(Collection $that): self
+    {
+        if (get_class($this) !== get_class($that)) {
+            throw new InvalidArgumentException();
+        }
+        
+        return new self(array_merge($this->items, $that->items));
+    }
+    
     /**
      * Offset to unset
      * This is not supported due to immutable nature.
